@@ -27,7 +27,7 @@ public class CustomAdapter extends ArrayAdapter<BookData> {
         TextView txtPrice;
     }
 
-    public CustomAdapter(@NonNull Context context, ArrayList<BookData> dataSet) {
+    CustomAdapter(@NonNull Context context, ArrayList<BookData> dataSet) {
         super(context, R.layout.custom_list, dataSet);
         this.dataSet = dataSet;
         this.mContext = context;
@@ -60,6 +60,7 @@ public class CustomAdapter extends ArrayAdapter<BookData> {
             result = convertView;
         }
 
+        viewHolder.coverImage.setImageBitmap(dataModel.getCoverImage());
         viewHolder.txtTitle.setText(dataModel.getTitle());
         viewHolder.txtAuthor.setText(dataModel.getAuthor());
         viewHolder.txtDesc.setText(dataModel.getDesc());

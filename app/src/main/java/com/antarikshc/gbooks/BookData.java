@@ -1,5 +1,7 @@
 package com.antarikshc.gbooks;
 
+import android.graphics.Bitmap;
+
 public class BookData {
 
     private String title;
@@ -10,8 +12,9 @@ public class BookData {
     private String infoUrl;
     private String imgUrl;
     private String buyUrl;
+    private Bitmap coverImage;
 
-    public BookData(String title, String author, String desc, Double price, String publisher, String infoUrl, String imgUrl, String buyUrl) {
+    BookData(String title, String author, String desc, Double price, String publisher, String infoUrl, String imgUrl, String buyUrl, Bitmap coverImage) {
         this.title = title;
         this.author = author;
         this.desc = desc;
@@ -20,6 +23,7 @@ public class BookData {
         this.infoUrl = infoUrl;
         this.imgUrl = imgUrl;
         this.buyUrl = buyUrl;
+        this.coverImage = coverImage;
     }
 
     public String getTitle() {
@@ -84,5 +88,13 @@ public class BookData {
 
     public void setBuyUrl(String buyUrl) {
         this.buyUrl = buyUrl;
+    }
+
+    public Bitmap getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(Bitmap coverImage) {
+        this.coverImage = coverImage;
     }
 }

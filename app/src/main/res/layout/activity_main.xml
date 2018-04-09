@@ -18,7 +18,7 @@
 
         <SearchView
             android:id="@+id/searchBar"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1">
 
@@ -31,6 +31,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignStart="@+id/searchLayout"
-        android:layout_below="@+id/searchLayout" />
+        android:layout_below="@+id/searchLayout"
+        android:layout_marginTop="9sp"
+        android:layout_marginBottom="9sp"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="9.0sp" />
 
 </android.widget.RelativeLayout>

@@ -1,5 +1,7 @@
 package com.antarikshc.gbooks;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -117,7 +119,6 @@ public class ConnectAPI {
     }
 
 
-
     /** Parse JSON response and extract items to be stored in BookData **/
     private static ArrayList<BookData> extractBooks(String jsonResponse) {
 
@@ -174,8 +175,21 @@ public class ConnectAPI {
                     buyUrl = "N/A";
                 }
 
+                Bitmap coverImage = null;
+                // Create URL object
+                if (imgUrl != null) {
+                    URL url = createUrl(imgUrl);
+                    try {
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        connection.connect();
+                        InputStream inputStream = connection.getInputStream();
+                        coverImage = BitmapFactory.decodeStream(inputStream);
+                    } catch (Exception e) {
+                        Log.e(LOG_TAG, "Problem getting image from HTTP url.", e);
+                    }
+                }
 
-                books.add(new BookData(title, author, desc, price, publisher, infoUrl, imgUrl, buyUrl));
+                books.add(new BookData(title, author, desc, price, publisher, infoUrl, imgUrl, buyUrl, coverImage));
             }
 
         } catch (JSONException e) {
