@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.widget.RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="182dp"
     android:padding="1dp"
-    android:background="@drawable/list_item_border" >
+    android:background="@drawable/list_item_border">
 
     <ImageView
         android:id="@+id/coverImage"
@@ -21,7 +20,7 @@
         android:layout_marginTop="8dp"
         android:layout_toEndOf="@+id/coverImage"
         android:ellipsize="end"
-        android:fontFamily="sans-serif-medium"
+        android:fontFamily="sans-serif"
         android:maxLines="1"
         android:textSize="24sp" />
 
@@ -41,6 +40,7 @@
         android:layout_alignStart="@+id/txtTitle"
         android:layout_below="@+id/txtAuthor"
         android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
         android:ellipsize="end"
         android:maxLines="3"
         android:textSize="16sp" />

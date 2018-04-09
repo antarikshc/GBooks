@@ -6,11 +6,12 @@ import android.content.Intent;
 import android.content.Loader;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -25,8 +26,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public static final String LOG_TAG = MainActivity.class.getName();
 
     /** URL to fetch data **/
-    private static String BOOKS_API_URL =
-            "https://www.googleapis.com/books/v1/volumes?q=android&maxResults=10";
+    private static String BOOKS_API_URL = null;
 
     //Books loaded ID, default = 1 currently using single Loader
     private static int BOOKS_LOADER_ID = 1;
@@ -35,28 +35,54 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     ListView booksListView;
     private CustomAdapter customAdapter;
     private SearchView searchBar;
-    LoaderManager loaderManager = getLoaderManager();
+    LoaderManager loaderManager;
     private TextView EmptyStateTextView;
     ProgressBar loadSpin;
     RelativeLayout rootLayout;
+    LinearLayout searchLayout;
+
+    //Boolean value to let us know whether Search Bar is translated or not
+    boolean searchBarInCenter;
+    //boolean to show "Tap on search!" for first boot
+    boolean firstBoot = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Bind all views from xml to variables
         rootLayout = findViewById(R.id.rootLayout);
 
         booksListView = findViewById(R.id.booksListView);
-        searchBar = findViewById(R.id.searchBar);
 
+        searchBar = findViewById(R.id.searchBar);
+        searchLayout = findViewById(R.id.searchLayout);
+
+        loadSpin = findViewById(R.id.loadSpin);
+        EmptyStateTextView = findViewById(R.id.emptyView);
+
+        //on click listener to perform search operation
         searchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                Log.i(LOG_TAG, query);
+                //Clear focus so that search bar can be translated back up top
+                searchBar.setQuery("", false);
+                searchBar.clearFocus();
+
+                //remove the Empty State msg to make room for spinner
+                EmptyStateTextView.setText("");
+
+                //this will spin till View.GONE is called at onLoadFinished
+                loadSpin.setVisibility(View.VISIBLE);
+                loadSpin.animate().alpha(1.0f).setDuration(500);
+
                 BOOKS_API_URL = "https://www.googleapis.com/books/v1/volumes?q=" + query + "&maxResults=10";
+
                 //destroy previous loader and increment the loader id
+                booksListView.animate().alpha(0.1f).setDuration(400);
                 destroyLoader(BOOKS_LOADER_ID);
+
                 BOOKS_LOADER_ID += 1;
                 executeLoader();
                 return true;
@@ -68,8 +94,33 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         });
 
-        customAdapter = new CustomAdapter(getApplicationContext(), new ArrayList<BookData>());
+        //animate search bar and book list when users tap on search
+        searchBar.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                //if in center, translate up and vice-versa
+                if (searchBarInCenter) {
+                    searchLayout.animate().translationYBy(-500f).setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(500);
+                    booksListView.animate().translationYBy(-500f).setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(500);
+                    booksListView.animate().alpha(1f).setDuration(400);
+                    EmptyStateTextView.animate().alpha(1f).setDuration(400);
 
+                    searchBarInCenter = false;
+
+                } else if (!searchBarInCenter) {
+                    searchLayout.animate().translationYBy(500f).setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(500);
+                    booksListView.animate().translationYBy(500f).setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(500);
+                    booksListView.animate().alpha(0f).setDuration(400);
+                    EmptyStateTextView.animate().alpha(0f).setDuration(400);
+                    searchBarInCenter = true;
+                }
+            }
+        });
+
+        //we are not searching for books onCreate
+        loadSpin.setVisibility(View.GONE);
+
+        customAdapter = new CustomAdapter(getApplicationContext(), new ArrayList<BookData>());
         //setting customAdapter for book list view
         booksListView.setAdapter(customAdapter);
 
@@ -90,16 +141,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         });
 
         //set empty text view for a proper msg to user
-        EmptyStateTextView = findViewById(R.id.emptyView);
         booksListView.setEmptyView(EmptyStateTextView);
 
-        loadSpin = findViewById(R.id.loadSpin);
-
+        loaderManager = getLoaderManager();
         boolean netConnection = checkNet();
         if (netConnection) {
+            //we need to call Loader in onCreate
+            //else it won't persist through orientations
             executeLoader();
         } else {
             EmptyStateTextView.setText(R.string.no_network);
+            loadSpin.animate().alpha(0.1f).setDuration(500);
             loadSpin.setVisibility(View.GONE);
         }
     }
@@ -107,12 +159,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     protected void onResume() {
         super.onResume();
+        //we dont want search bar in focus when user returns to Main screen
         searchBar.setQuery("", false);
         rootLayout.requestFocus();
+        booksListView.setVisibility(View.VISIBLE);
     }
 
+    //Initiate and destroy loader methods to be called after search is submitted
     private void executeLoader(){
-        loaderManager.initLoader(BOOKS_LOADER_ID, null, this).forceLoad();
+        loaderManager.initLoader(BOOKS_LOADER_ID, null, this);
     }
     private void destroyLoader(int id) {
         loaderManager.destroyLoader(id);
@@ -125,15 +180,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onLoadFinished(Loader<ArrayList<BookData>> loader, ArrayList<BookData> books) {
-        EmptyStateTextView.setText(R.string.no_books);
+        if (!firstBoot) {
+            EmptyStateTextView.setText(R.string.no_books);
+            firstBoot = false;
+        }
 
         // Clear the adapter of previous books data
         customAdapter.clear();
-
+        loadSpin.animate().alpha(0.1f).setDuration(500);
+        loadSpin.setVisibility(View.GONE);
 
         if (books != null && !books.isEmpty()) {
-            loadSpin.setVisibility(View.GONE);
             customAdapter.addAll(books);
+            booksListView.animate().alpha(1.0f).setDuration(400);
         }
     }
 
@@ -143,12 +202,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         customAdapter.clear();
     }
 
+    //Check internet is connected or not, to notify user
     public boolean checkNet() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
-
     }
 
 }
