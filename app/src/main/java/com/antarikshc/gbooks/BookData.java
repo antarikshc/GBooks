@@ -12,9 +12,10 @@ public class BookData {
     private String infoUrl;
     private String imgUrl;
     private String buyUrl;
+    private String currency;
     private Bitmap coverImage;
 
-    BookData(String title, String author, String desc, Double price, String publisher, String infoUrl, String imgUrl, String buyUrl, Bitmap coverImage) {
+    BookData(String title, String author, String desc, Double price, String publisher, String infoUrl, String imgUrl, String buyUrl, String currency, Bitmap coverImage) {
         this.title = title;
         this.author = author;
         this.desc = desc;
@@ -23,6 +24,7 @@ public class BookData {
         this.infoUrl = infoUrl;
         this.imgUrl = imgUrl;
         this.buyUrl = buyUrl;
+        this.currency = currency;
         this.coverImage = coverImage;
     }
 
@@ -89,6 +91,10 @@ public class BookData {
     public void setBuyUrl(String buyUrl) {
         this.buyUrl = buyUrl;
     }
+
+    public String getCurrency() { return currency; }
+
+    public void setCurrency(String currency) { this.currency = currency; }
 
     public Bitmap getCoverImage() {
         return coverImage;

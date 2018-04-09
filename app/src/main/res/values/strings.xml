@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">GBooks</string>
+    <string name="no_books">No books found.</string>
+    <string name="no_network">No Internet connection.</string>
+    <string name="rupee">\u20B9</string>
+    <string name="euro">\u20ac</string>
+    <string name="not_for_sale">NOT FOR SALE</string>
 </resources>

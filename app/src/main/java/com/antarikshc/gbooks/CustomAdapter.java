@@ -64,8 +64,29 @@ public class CustomAdapter extends ArrayAdapter<BookData> {
         viewHolder.txtTitle.setText(dataModel.getTitle());
         viewHolder.txtAuthor.setText(dataModel.getAuthor());
         viewHolder.txtDesc.setText(dataModel.getDesc());
+
         Double price = dataModel.getPrice();
-        viewHolder.txtPrice.setText(formatPrice(price));
+        if(price == null) {
+            viewHolder.txtPrice.setTextSize(21f);
+            viewHolder.txtPrice.setText(R.string.not_for_sale);
+        } else {
+            String currency = dataModel.getCurrency();
+            switch (currency) {
+                case "INR":
+                    viewHolder.txtPrice.setText(R.string.rupee);
+                    break;
+                case "USD":
+                    viewHolder.txtPrice.setText("$");
+                    break;
+                case "EUR":
+                    viewHolder.txtPrice.setText(R.string.euro);
+                    break;
+                default:
+                    viewHolder.txtPrice.setText(currency);
+            }
+            viewHolder.txtPrice.setTextSize(26f);
+            viewHolder.txtPrice.append(formatPrice(price));
+        }
 
         return convertView;
     }

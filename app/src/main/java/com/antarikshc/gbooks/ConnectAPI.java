@@ -90,7 +90,7 @@ public class ConnectAPI {
             }
 
         } catch (IOException e) {
-            Log.e(LOG_TAG, "Problem retrieving the earthquake JSON results.", e);
+            Log.e(LOG_TAG, "Problem retrieving the books JSON results.", e);
         } finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
@@ -122,7 +122,7 @@ public class ConnectAPI {
     /** Parse JSON response and extract items to be stored in BookData **/
     private static ArrayList<BookData> extractBooks(String jsonResponse) {
 
-        // Create an empty ArrayList that we can start adding earthquakes to
+        // Create an empty ArrayList that we can start adding books to
         ArrayList<BookData> books = new ArrayList<>();
 
         // Try to parse the jsonResponse. If there's a problem with the way the JSON
@@ -166,12 +166,14 @@ public class ConnectAPI {
 
                 Double price;
                 String buyUrl;
+                String currency = null;
                 if (onSale.equals("FOR_SALE")) {
                     JSONObject retail = sale.getJSONObject("retailPrice");
+                    currency = retail.getString("currencyCode");
                     price = retail.getDouble("amount");
                     buyUrl = sale.getString("buyLink");
                 } else {
-                    price = 0.0;
+                    price = null;
                     buyUrl = "N/A";
                 }
 
@@ -185,21 +187,21 @@ public class ConnectAPI {
                         InputStream inputStream = connection.getInputStream();
                         coverImage = BitmapFactory.decodeStream(inputStream);
                     } catch (Exception e) {
-                        Log.e(LOG_TAG, "Problem getting image from HTTP url.", e);
+                        Log.e(LOG_TAG, "Problem encountered getting image from HTTP url.", e);
                     }
                 }
 
-                books.add(new BookData(title, author, desc, price, publisher, infoUrl, imgUrl, buyUrl, coverImage));
+                books.add(new BookData(title, author, desc, price, publisher, infoUrl, imgUrl, buyUrl, currency, coverImage));
             }
 
         } catch (JSONException e) {
             // If an error is thrown when executing any of the above statements in the "try" block,
             // catch the exception here, so the app doesn't crash. Print a log message
             // with the message from the exception.
-            Log.e(LOG_TAG, "Problem parsing the earthquake JSON results", e);
+            Log.e(LOG_TAG, "Problem parsing the books JSON results", e);
         }
 
-        // Return the list of earthquakes
+        // Return the list of books
         return books;
     }
 

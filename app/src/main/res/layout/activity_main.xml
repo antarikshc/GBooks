@@ -1,26 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.widget.RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp"
+    android:focusableInTouchMode="true"
     tools:context=".MainActivity">
 
     <LinearLayout
         android:id="@+id/searchLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="9sp"
         android:background="@drawable/search_border"
         android:orientation="horizontal"
-        android:visibility="gone">
+        android:baselineAligned="false">
 
         <SearchView
             android:id="@+id/searchBar"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:iconifiedByDefault="false"
+            android:queryHint="Google Books">
 
         </SearchView>
 
@@ -32,9 +36,23 @@
         android:layout_height="match_parent"
         android:layout_alignStart="@+id/searchLayout"
         android:layout_below="@+id/searchLayout"
-        android:layout_marginTop="9sp"
         android:layout_marginBottom="9sp"
+        android:layout_marginTop="9sp"
         android:divider="@android:color/transparent"
         android:dividerHeight="9.0sp" />
+
+    <TextView
+        android:id="@+id/emptyView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:textAppearance="?android:textAppearanceMedium" />
+
+    <ProgressBar
+        android:id="@+id/loadSpin"
+        style="@style/Widget.AppCompat.ProgressBar"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_centerInParent="true" />
 
 </android.widget.RelativeLayout>

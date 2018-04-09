@@ -8,10 +8,14 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.SearchView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -21,22 +25,48 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public static final String LOG_TAG = MainActivity.class.getName();
 
     /** URL to fetch data **/
-    private static final String BOOKS_API_URL =
+    private static String BOOKS_API_URL =
             "https://www.googleapis.com/books/v1/volumes?q=android&maxResults=10";
 
     //Books loaded ID, default = 1 currently using single Loader
-    private static final int BOOKS_LOADER_ID = 1;
+    private static int BOOKS_LOADER_ID = 1;
 
     /** global declarations **/
     ListView booksListView;
     private CustomAdapter customAdapter;
+    private SearchView searchBar;
+    LoaderManager loaderManager = getLoaderManager();
+    private TextView EmptyStateTextView;
+    ProgressBar loadSpin;
+    RelativeLayout rootLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        rootLayout = findViewById(R.id.rootLayout);
+
         booksListView = findViewById(R.id.booksListView);
+        searchBar = findViewById(R.id.searchBar);
+
+        searchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Log.i(LOG_TAG, query);
+                BOOKS_API_URL = "https://www.googleapis.com/books/v1/volumes?q=" + query + "&maxResults=10";
+                //destroy previous loader and increment the loader id
+                destroyLoader(BOOKS_LOADER_ID);
+                BOOKS_LOADER_ID += 1;
+                executeLoader();
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
 
         customAdapter = new CustomAdapter(getApplicationContext(), new ArrayList<BookData>());
 
@@ -52,18 +82,40 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 if (currentData != null) {
                     intent.putExtra("url", currentData.getInfoUrl());
                 } else {
-                    Toast.makeText(MainActivity.this, "No URL found for requested earthquake!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "No URL found for requested books!", Toast.LENGTH_SHORT).show();
                 }
 
                 startActivity(intent);
             }
         });
 
+        //set empty text view for a proper msg to user
+        EmptyStateTextView = findViewById(R.id.emptyView);
+        booksListView.setEmptyView(EmptyStateTextView);
+
+        loadSpin = findViewById(R.id.loadSpin);
+
         boolean netConnection = checkNet();
         if (netConnection) {
-            LoaderManager loaderManager = getLoaderManager();
-            loaderManager.initLoader(BOOKS_LOADER_ID, null, this);
+            executeLoader();
+        } else {
+            EmptyStateTextView.setText(R.string.no_network);
+            loadSpin.setVisibility(View.GONE);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        searchBar.setQuery("", false);
+        rootLayout.requestFocus();
+    }
+
+    private void executeLoader(){
+        loaderManager.initLoader(BOOKS_LOADER_ID, null, this).forceLoad();
+    }
+    private void destroyLoader(int id) {
+        loaderManager.destroyLoader(id);
     }
 
     @Override
@@ -73,12 +125,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onLoadFinished(Loader<ArrayList<BookData>> loader, ArrayList<BookData> books) {
+        EmptyStateTextView.setText(R.string.no_books);
 
-        // Clear the adapter of previous earthquake data
+        // Clear the adapter of previous books data
         customAdapter.clear();
 
 
         if (books != null && !books.isEmpty()) {
+            loadSpin.setVisibility(View.GONE);
             customAdapter.addAll(books);
         }
     }

@@ -11,6 +11,6 @@
         android:color="#999999">
     </stroke>
     <solid
-        android:color="#fff6f7">
+        android:color="#fffdf9">
     </solid>
 </shape>
