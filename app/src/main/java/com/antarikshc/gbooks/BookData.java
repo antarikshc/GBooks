@@ -74,7 +74,7 @@ public class BookData {
         return previewUrl;
     }
 
-    public void setPreviewUrl(String infoUrl) {
+    public void setPreviewUrl(String previewUrl) {
         this.previewUrl = previewUrl;
     }
 
