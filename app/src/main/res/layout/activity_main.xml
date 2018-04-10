@@ -15,8 +15,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="9sp"
         android:background="@drawable/search_border"
-        android:orientation="horizontal"
-        android:baselineAligned="false">
+        android:baselineAligned="false"
+        android:orientation="horizontal">
 
         <SearchView
             android:id="@+id/searchBar"
@@ -47,7 +47,7 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:textAppearance="?android:textAppearanceMedium"
-        android:text="@string/tap_on_search" />
+        android:visibility="gone" />
 
     <ProgressBar
         android:id="@+id/loadSpin"

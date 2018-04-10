@@ -4,6 +4,7 @@ import android.app.LoaderManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
+import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -19,19 +20,25 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<ArrayList<BookData>> {
 
     public static final String LOG_TAG = MainActivity.class.getName();
 
-    /** URL to fetch data **/
+    /**
+     * URL to fetch data
+     **/
     private static String BOOKS_API_URL = null;
 
     //Books loaded ID, default = 1 currently using single Loader
     private static int BOOKS_LOADER_ID = 1;
 
-    /** global declarations **/
+    /**
+     * global declarations
+     **/
     ListView booksListView;
     private CustomAdapter customAdapter;
     private SearchView searchBar;
@@ -43,8 +50,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     //Boolean value to let us know whether Search Bar is translated or not
     boolean searchBarInCenter;
-    //boolean to show "Tap on search!" for first boot
-    boolean firstBoot = true;
+
+    //Use this to show "Tap on search!" when user open this app, rest of the time no books
+    boolean firstSearch = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +83,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
                 //this will spin till View.GONE is called at onLoadFinished
                 loadSpin.setVisibility(View.VISIBLE);
-                loadSpin.animate().alpha(1.0f).setDuration(500);
 
                 BOOKS_API_URL = "https://www.googleapis.com/books/v1/volumes?q=" + query + "&maxResults=10";
 
@@ -112,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     booksListView.animate().translationYBy(500f).setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(500);
                     booksListView.animate().alpha(0f).setDuration(400);
                     EmptyStateTextView.animate().alpha(0f).setDuration(400);
+
                     searchBarInCenter = true;
                 }
             }
@@ -129,14 +137,33 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 BookData currentData = customAdapter.getItem(i);
 
-                Intent intent = new Intent(getApplicationContext(), WebviewActivity.class);
-                if (currentData != null) {
-                    intent.putExtra("url", currentData.getInfoUrl());
-                } else {
-                    Toast.makeText(MainActivity.this, "No URL found for requested books!", Toast.LENGTH_SHORT).show();
-                }
+                Intent intent = new Intent(getApplicationContext(), BookActivity.class);
 
-                startActivity(intent);
+                if (currentData != null) {
+                    ArrayList<String> data = new ArrayList<>(
+                            Arrays.asList(
+                                    currentData.getTitle(),
+                                    currentData.getAuthor(),
+                                    currentData.getPublisher(),
+                                    currentData.getDesc(),
+                                    currentData.getBuyString(),
+                                    currentData.getPreviewUrl(),
+                                    currentData.getBuyUrl()));
+
+                    intent.putStringArrayListExtra("data", data);
+
+                    Bitmap bitmap = currentData.getCoverImage();
+                    ByteArrayOutputStream bStream = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, bStream);
+                    byte[] byteArray = bStream.toByteArray();
+
+                    intent.putExtra("image", byteArray);
+
+                    startActivity(intent);
+
+                } else {
+                    Toast.makeText(MainActivity.this, "No Data found for selected book!", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -151,7 +178,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             executeLoader();
         } else {
             EmptyStateTextView.setText(R.string.no_network);
-            loadSpin.animate().alpha(0.1f).setDuration(500);
             loadSpin.setVisibility(View.GONE);
         }
     }
@@ -166,9 +192,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     //Initiate and destroy loader methods to be called after search is submitted
-    private void executeLoader(){
+    private void executeLoader() {
         loaderManager.initLoader(BOOKS_LOADER_ID, null, this);
     }
+
     private void destroyLoader(int id) {
         loaderManager.destroyLoader(id);
     }
@@ -180,14 +207,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onLoadFinished(Loader<ArrayList<BookData>> loader, ArrayList<BookData> books) {
-        if (!firstBoot) {
+        if (!firstSearch) {
+            EmptyStateTextView.setText(R.string.tap_on_search);
+            firstSearch = true;
+        } else {
             EmptyStateTextView.setText(R.string.no_books);
-            firstBoot = false;
         }
 
         // Clear the adapter of previous books data
         customAdapter.clear();
-        loadSpin.animate().alpha(0.1f).setDuration(500);
         loadSpin.setVisibility(View.GONE);
 
         if (books != null && !books.isEmpty()) {

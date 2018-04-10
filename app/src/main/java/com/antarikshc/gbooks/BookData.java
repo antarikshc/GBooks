@@ -9,23 +9,25 @@ public class BookData {
     private String desc;
     private Double price;
     private String publisher;
-    private String infoUrl;
+    private String previewUrl;
     private String imgUrl;
     private String buyUrl;
     private String currency;
     private Bitmap coverImage;
+    private String buyString;
 
-    BookData(String title, String author, String desc, Double price, String publisher, String infoUrl, String imgUrl, String buyUrl, String currency, Bitmap coverImage) {
+    BookData(String title, String author, String desc, Double price, String publisher, String previewUrl, String imgUrl, String buyUrl, String currency, Bitmap coverImage, String buyString) {
         this.title = title;
         this.author = author;
         this.desc = desc;
         this.price = price;
         this.publisher = publisher;
-        this.infoUrl = infoUrl;
+        this.previewUrl = previewUrl;
         this.imgUrl = imgUrl;
         this.buyUrl = buyUrl;
         this.currency = currency;
         this.coverImage = coverImage;
+        this.buyString = buyString;
     }
 
     public String getTitle() {
@@ -68,12 +70,12 @@ public class BookData {
         this.publisher = publisher;
     }
 
-    public String getInfoUrl() {
-        return infoUrl;
+    public String getPreviewUrl() {
+        return previewUrl;
     }
 
-    public void setInfoUrl(String infoUrl) {
-        this.infoUrl = infoUrl;
+    public void setPreviewUrl(String infoUrl) {
+        this.previewUrl = previewUrl;
     }
 
     public String getImgUrl() {
@@ -92,9 +94,13 @@ public class BookData {
         this.buyUrl = buyUrl;
     }
 
-    public String getCurrency() { return currency; }
+    public String getCurrency() {
+        return currency;
+    }
 
-    public void setCurrency(String currency) { this.currency = currency; }
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
 
     public Bitmap getCoverImage() {
         return coverImage;
@@ -102,5 +108,13 @@ public class BookData {
 
     public void setCoverImage(Bitmap coverImage) {
         this.coverImage = coverImage;
+    }
+
+    public String getBuyString() {
+        return buyString;
+    }
+
+    public void setBuyString(String buyString) {
+        this.buyString = buyString;
     }
 }

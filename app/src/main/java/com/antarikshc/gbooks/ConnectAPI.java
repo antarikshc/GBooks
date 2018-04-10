@@ -22,10 +22,15 @@ public class ConnectAPI {
 
     private static final String LOG_TAG = ConnectAPI.class.getSimpleName();
 
-    /** Constructor to prevent making object of class **/
-    private ConnectAPI() {}
+    /**
+     * Constructor to prevent making object of class
+     **/
+    private ConnectAPI() {
+    }
 
-    /** to be called from other activities, returns BookData object **/
+    /**
+     * to be called from other activities, returns BookData object
+     **/
     public static ArrayList<BookData> fetchBookData(String urls) {
 
         if (urls.isEmpty() || urls == null) {
@@ -103,7 +108,9 @@ public class ConnectAPI {
         return jsonResponse;
     }
 
-    /** Get JSON response from server as InputSteam and store as String **/
+    /**
+     * Get JSON response from server as InputSteam and store as String
+     **/
     private static String readFromStream(InputStream inputStream) throws IOException {
         StringBuilder output = new StringBuilder();
         if (inputStream != null) {
@@ -119,7 +126,9 @@ public class ConnectAPI {
     }
 
 
-    /** Parse JSON response and extract items to be stored in BookData **/
+    /**
+     * Parse JSON response and extract items to be stored in BookData
+     **/
     private static ArrayList<BookData> extractBooks(String jsonResponse) {
 
         // Create an empty ArrayList that we can start adding books to
@@ -148,7 +157,7 @@ public class ConnectAPI {
 
                 //validate if book has description
                 String desc;
-                if (volumeInfo.isNull("description")){
+                if (volumeInfo.isNull("description")) {
                     desc = "N/A";
                 } else {
                     desc = volumeInfo.getString("description");
@@ -157,7 +166,7 @@ public class ConnectAPI {
                 JSONObject imageLinks = volumeInfo.getJSONObject("imageLinks");
                 String imgUrl = imageLinks.getString("smallThumbnail");
 
-                String infoUrl = volumeInfo.getString("infoLink");
+                String previewUrl = volumeInfo.getString("previewLink");
 
                 JSONObject sale = itemsObject.getJSONObject("saleInfo");
 
@@ -191,7 +200,7 @@ public class ConnectAPI {
                     }
                 }
 
-                books.add(new BookData(title, author, desc, price, publisher, infoUrl, imgUrl, buyUrl, currency, coverImage));
+                books.add(new BookData(title, author, desc, price, publisher, previewUrl, imgUrl, buyUrl, currency, coverImage, "dummy"));
             }
 
         } catch (JSONException e) {
