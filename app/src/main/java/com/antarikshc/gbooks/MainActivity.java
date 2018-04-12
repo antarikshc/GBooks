@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 //this will spin till View.GONE is called at onLoadFinished
                 loadSpin.setVisibility(View.VISIBLE);
 
-                BOOKS_API_URL = "https://www.googleapis.com/books/v1/volumes?q=" + query + "&maxResults=10";
+                BOOKS_API_URL = "https://www.googleapis.com/books/v1/volumes?q=" + query + "&maxResults=10&key=AIzaSyC3xxnV71jfPxUp0C9iORZPnTsLInrO1Bg";
 
                 //destroy previous loader and increment the loader id
                 booksListView.animate().alpha(0.1f).setDuration(400);
