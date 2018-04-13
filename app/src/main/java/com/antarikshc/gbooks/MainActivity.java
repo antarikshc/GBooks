@@ -7,6 +7,7 @@ import android.content.Loader;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -31,7 +32,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     /**
      * URL to fetch data
      **/
-    private static String BOOKS_API_URL = null;
+    private static Uri baseUri = null;
+    Uri.Builder uriBuilder;
+
+    /**
+     * API KEY
+     **/
+    private static String API_KEY = "AIzaSyC3xxnV71jfPxUp0C9iORZPnTsLInrO1Bg";
 
     //Books loaded ID, default = 1 currently using single Loader
     private static int BOOKS_LOADER_ID = 1;
@@ -52,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     boolean searchBarInCenter;
 
     //Use this to show "Tap on search!" when user open this app, rest of the time no books
-    boolean firstSearch = false;
+    boolean firstSearch = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         searchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+
                 //Clear focus so that search bar can be translated back up top
                 searchBar.setQuery("", false);
                 searchBar.clearFocus();
@@ -84,10 +92,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 //this will spin till View.GONE is called at onLoadFinished
                 loadSpin.setVisibility(View.VISIBLE);
 
-                BOOKS_API_URL = "https://www.googleapis.com/books/v1/volumes?q=" + query + "&maxResults=10&key=AIzaSyC3xxnV71jfPxUp0C9iORZPnTsLInrO1Bg";
+                baseUri = Uri.parse("https://www.googleapis.com/books/v1/volumes");
+                uriBuilder = baseUri.buildUpon();
+
+                uriBuilder.appendQueryParameter("q", query);
+                uriBuilder.appendQueryParameter("maxResults", "10");
+                uriBuilder.appendQueryParameter("key", API_KEY);
 
                 //destroy previous loader and increment the loader id
                 booksListView.animate().alpha(0.1f).setDuration(400);
+
                 destroyLoader(BOOKS_LOADER_ID);
 
                 BOOKS_LOADER_ID += 1;
@@ -185,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     protected void onResume() {
         super.onResume();
-        //we dont want search bar in focus when user returns to Main screen
+        //we don't want search bar in focus when user returns to Main screen
         searchBar.setQuery("", false);
         rootLayout.requestFocus();
         booksListView.setVisibility(View.VISIBLE);
@@ -202,14 +216,18 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public Loader<ArrayList<BookData>> onCreateLoader(int id, Bundle args) {
-        return new BooksLoader(this, BOOKS_API_URL);
+        if (baseUri == null) {
+            return new BooksLoader(this, null);
+        } else {
+            return new BooksLoader(this, uriBuilder.toString());
+        }
     }
 
     @Override
     public void onLoadFinished(Loader<ArrayList<BookData>> loader, ArrayList<BookData> books) {
-        if (!firstSearch) {
+        if (firstSearch) {
             EmptyStateTextView.setText(R.string.tap_on_search);
-            firstSearch = true;
+            firstSearch = false;
         } else {
             EmptyStateTextView.setText(R.string.no_books);
         }
@@ -237,5 +255,4 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
-
 }

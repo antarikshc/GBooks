@@ -125,7 +125,6 @@ public class ConnectAPI {
         return output.toString();
     }
 
-
     /**
      * Parse JSON response and extract items to be stored in BookData
      **/
@@ -150,21 +149,27 @@ public class ConnectAPI {
 
                 String title = volumeInfo.getString("title");
 
-                JSONArray authorsArray = volumeInfo.getJSONArray("authors");
-                String author = authorsArray.getString(0);
+                //Initialize String author as null and add if statement
+                //In some countries, API is returning no authors for books.
+                String author = null;
+                if (volumeInfo.has("authors") && !volumeInfo.isNull("authors")) {
+                    JSONArray authorsArray = volumeInfo.getJSONArray("authors");
+                    author = authorsArray.getString(0);
+                }
 
-                String publisher = volumeInfo.getString("publisher");
+                String publisher = null;
+                //check before adding
+                if (volumeInfo.has("publisher") && !volumeInfo.isNull("publisher")) {
+                    publisher = volumeInfo.getString("publisher");
+                }
 
                 //validate if book has description
                 String desc;
                 if (volumeInfo.isNull("description")) {
-                    desc = "N/A";
+                    desc = "Description not available.";
                 } else {
                     desc = volumeInfo.getString("description");
                 }
-
-                JSONObject imageLinks = volumeInfo.getJSONObject("imageLinks");
-                String imgUrl = imageLinks.getString("smallThumbnail");
 
                 String previewUrl = volumeInfo.getString("previewLink");
 
@@ -184,6 +189,14 @@ public class ConnectAPI {
                 } else {
                     price = null;
                     buyUrl = "N/A";
+                }
+
+
+                //getting the thumbnail if available
+                String imgUrl = null;
+                if (volumeInfo.has("imageLinks") && !volumeInfo.isNull("imageLinks")) {
+                    JSONObject imageLinks = volumeInfo.getJSONObject("imageLinks");
+                    imgUrl = imageLinks.getString("smallThumbnail");
                 }
 
                 Bitmap coverImage = null;
